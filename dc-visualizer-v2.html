@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Divide & Conquer Visualizer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--tx:#1b2030;--mu:#6a7288;--bd:#dde1ea;--ac:#3b5bdb;--b:#4c6ef5;--g:#2f9e44;--o:#f08c00;--p:#d6336c;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12141c;--card:#1b1e2a;--tx:#e8eaf2;--mu:#9aa2b8;--bd:#2c3144;--ac:#7c93ff;--b:#6c86ff;--g:#51cf66;--o:#ffa94d;--p:#f06595;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+.w{max-width:860px;margin:0 auto;padding:24px 16px 56px}h1{margin:0;font-size:28px}.sub{color:var(--mu);margin:4px 0 22px}
+button,input,select{font:inherit;color:var(--tx)}
+.nav{display:flex;gap:8px;flex-wrap:wrap}.nav+.nav{margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)}
+.tab,.btn{border:1px solid var(--bd);background:var(--card);padding:8px 14px;border-radius:10px;cursor:pointer}
+.tab.on,.btn.pri{background:var(--ac);color:#fff;border-color:var(--ac)}.nav.sm .tab{font-size:14px;padding:6px 12px;border-radius:20px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:24px;margin-top:20px}
+h2{margin:0 0 10px;font-size:22px}p{margin:8px 0}.hint{color:var(--mu);font-size:14px}
+input,select{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 10px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.vis{min-height:190px;display:flex;align-items:center;justify-content:center;background:var(--bg);border-radius:12px;padding:14px;margin:14px 0;overflow-x:auto}
+.bars{display:flex;align-items:flex-end;gap:6px;height:170px;width:100%}
+.bar{flex:1;min-width:26px;background:var(--bd);border-radius:6px 6px 0 0;text-align:center;font-size:13px;padding-top:3px}
+.bar.l{background:var(--b);color:#fff}.bar.r{background:var(--o);color:#000}.bar.m{background:var(--g);color:#fff}.bar.x{background:var(--p);color:#fff}
+.msg{font-weight:600;font-size:17px;min-height:52px}
+.legend{font-size:14px;color:var(--mu)}
+details{margin-top:14px}summary{cursor:pointer;color:var(--mu)}
+.log{max-height:200px;overflow:auto;margin-top:8px;padding:8px;border:1px solid var(--bd);border-radius:10px;font:13px/1.7 ui-monospace,Menlo,monospace}.log .cur{background:var(--ac);color:#fff;border-radius:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.stat{border:1px solid var(--bd);border-radius:12px;padding:14px}.stat b{display:block;font-size:12px;color:var(--mu);text-transform:uppercase;margin-bottom:4px}
+pre{margin:12px 0 0;padding:16px;background:var(--bg);border:1px solid var(--bd);border-radius:12px;overflow-x:auto;font-size:13.5px;line-height:1.55}
+table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid var(--bd);padding:10px 8px;text-align:left}th{color:var(--mu);font-size:13px}
+.chips{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}.chip{background:var(--b);color:#fff;border-radius:7px;padding:2px 8px;font-size:12px}
+.lv{display:flex;align-items:center;gap:12px;margin:6px 0;width:100%}.lv .t{width:160px;font-size:13px;color:var(--mu);flex-shrink:0}.lv .c{flex:1}
+.ln{padding:8px 14px;border-left:4px solid var(--ac);background:var(--card);border-radius:8px;margin:6px 0;width:100%;font-size:17px}
+.pegs{display:flex;gap:30px;align-items:flex-end;justify-content:center;width:100%}.peg{width:30%;max-width:190px;height:150px;border-bottom:6px solid var(--mu);display:flex;flex-direction:column-reverse;align-items:center;gap:3px;position:relative}.peg i{position:absolute;bottom:-26px;font-style:normal;color:var(--mu)}
+.dk{height:20px;border-radius:6px;background:var(--b);color:#fff;font-size:12px;text-align:center}
+.mx{display:inline-grid;grid-template-columns:repeat(2,44px);gap:4px;margin:0 8px;vertical-align:middle}.mx span{background:var(--card);border:1px solid var(--bd);border-radius:6px;text-align:center;padding:6px 0}.mx .h{background:var(--g);color:#fff}
+.big{font-size:24px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center}
+.tree{display:flex;flex-direction:column;align-items:center;gap:8px}.n{padding:8px 16px;border-radius:10px;border:2px solid var(--b);background:var(--bg)}.n.c{border-color:var(--o)}.n.s{border-color:var(--g)}
+</style></head><body><div class="w">
+<h1>Divide &amp; Conquer</h1><div class="sub">Interactive simulator: concepts, recurrences, and example problems</div>
+<div class="nav" id="nav"></div><div class="nav sm" id="sub" style="display:none"></div><div id="view"></div></div>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;"),f3=x=>+x.toFixed(3);let timer=null;
+/* ---------- helpers ---------- */
+const bars=(a,h)=>{const mx=Math.max(...a.map(Math.abs),1);return `<div class="bars">${a.map((v,k)=>`<div class="bar ${h[k]||""}" style="height:${Math.max(24,Math.abs(v)/mx*150)}px">${v}</div>`).join("")}</div>`};
+const mat=(a,h)=>`<div class="mx">${a.map((v,i)=>`<span class="${h?"h":""}">${v}</span>`).join("")}</div>`;
+const pegs=P=>`<div class="pegs">${P.map((p,i)=>`<div class="peg">${p.map(d=>`<div class="dk" style="width:${28+d*22}px">${d}</div>`).join("")}<i>${"ABC"[i]}</i></div>`).join("")}</div>`;
+const rg=(lo,hi,c,h)=>{for(let i=lo;i<=hi;i++)h[i]=c;return h};
+/* ---------- generators (each step: m = message, v = visual html) ---------- */
+function genMax(A){const S=[],push=(m,h)=>S.push({m,v:bars(A,h)});push("Goal: find the contiguous part with the largest sum.",{});
+function f(lo,hi,d){const p=" ".repeat(d);
+if(lo==hi){push(p+"Base case: single element ["+lo+"] = "+A[lo],{[lo]:"m"});return{v:A[lo],l:lo,r:lo}}
+const mid=(lo+hi)>>1;push(p+"DIVIDE ["+lo+".."+hi+"] at index "+mid+" (blue = left, orange = right)",rg(mid+1,hi,"r",rg(lo,mid,"l",{})));
+const L=f(lo,mid,d+1),R=f(mid+1,hi,d+1);let s=0,ls=-Infinity,li=mid,rs=-Infinity,ri=mid+1;
+for(let i=mid;i>=lo;i--){s+=A[i];if(s>ls){ls=s;li=i}}s=0;for(let j=mid+1;j<=hi;j++){s+=A[j];if(s>rs){rs=s;ri=j}}
+const C=ls+rs,best=Math.max(L.v,R.v,C),res=best==C?{v:C,l:li,r:ri}:best==L.v?L:R;
+push(p+"COMBINE: left = "+L.v+", right = "+R.v+", crossing = "+ls+" + "+rs+" = "+C+" → max = "+best,rg(res.l,res.r,"m",{}));return res}
+const r=f(0,A.length-1,0);push("Answer: "+r.v+" (indices "+r.l+" to "+r.r+")",rg(r.l,r.r,"m",{}));return S}
+function genInt(x,y){const S=[];const push=(m,v)=>S.push({m,v:`<div class="big">${v}</div>`});push("Multiply "+x+" × "+y+" by splitting each number into two halves.",x+" × "+y);
+function f(x,y,d){const p=" ".repeat(d);if(x<10||y<10){push(p+"Base case: "+x+" × "+y+" = "+x*y,x+" × "+y+" = <b>"+x*y+"</b>");return x*y}
+const m=Math.max(String(x).length,String(y).length)>>1,P=10**m,a=Math.floor(x/P),b=x%P,c=Math.floor(y/P),e=y%P;
+push(p+"DIVIDE: "+x+" = "+a+"·10^"+m+" + "+b+",  "+y+" = "+c+"·10^"+m+" + "+e,x+" = "+a+"·10<sup>"+m+"</sup> + "+b+"<br>"+y+" = "+c+"·10<sup>"+m+"</sup> + "+e);
+const ac=f(a,c,d+1),ad=f(a,e,d+1),bc=f(b,c,d+1),bd=f(b,e,d+1),r=ac*P*P+(ad+bc)*P+bd;
+push(p+"COMBINE: "+ac+"·10^"+2*m+" + ("+ad+" + "+bc+")·10^"+m+" + "+bd+" = "+r,ac+"·10<sup>"+2*m+"</sup> + ("+(ad+bc)+")·10<sup>"+m+"</sup> + "+bd+" = <b>"+r+"</b>");return r}
+const r=f(x,y,0);push("Result: "+r+(r==x*y?"  ✓":" ✗"),x+" × "+y+" = <b>"+r+"</b>");return S}
+function genStr(A,B){const S=[],[a,b,c,d]=A,[e,f,g,h]=B,C=["?","?","?","?"],push=(m,hl)=>S.push({m,v:`<div>${mat(A)}×${mat(B)}=${mat(C,hl)}</div>`});
+push("Split each matrix into 4 blocks (here, 1×1). Normal D&C needs 8 multiplications; Strassen needs 7.");
+const M=[(a+d)*(e+h),(c+d)*e,a*(f-h),d*(g-e),(a+b)*h,(c-a)*(e+f),(b-d)*(g+h)],T=["(A11+A22)(B11+B22)","(A21+A22)·B11","A11·(B12−B22)","A22·(B21−B11)","(A11+A12)·B22","(A21−A11)(B11+B12)","(A12−A22)(B21+B22)"];
+M.forEach((v,i)=>push("M"+(i+1)+" = "+T[i]+" = "+v));
+const R=[M[0]+M[3]-M[4]+M[6],M[2]+M[4],M[1]+M[3],M[0]-M[1]+M[2]+M[5]],L=["M1+M4−M5+M7","M3+M5","M2+M4","M1−M2+M3+M6"];
+R.forEach((v,i)=>{C[i]=v;push("COMBINE: C"+["11","12","21","22"][i]+" = "+L[i]+" = "+v,1)});
+const N=[a*e+b*g,a*f+b*h,c*e+d*g,c*f+d*h];push(R.join()==N.join()?"✓ Matches normal multiplication, using 7 products instead of 8.":"✗ Mismatch",1);return S}
+function genHanoi(n){const P=[[],[],[]];for(let i=n;i>0;i--)P[0].push(i);const S=[],cp=()=>P.map(x=>x.slice());let mv=0;
+S.push({m:"Goal: move all "+n+" disks from A to C. Rules: one disk at a time, never a bigger disk on a smaller one.",v:pegs(cp())});
+(function t(k,s,d,x,dp){if(k==0)return;t(k-1,s,x,d,dp+1);const disk=P[s].pop();P[d].push(disk);mv++;
+S.push({m:" ".repeat(0)+"Move "+mv+": disk "+disk+" from "+"ABC"[s]+" to "+"ABC"[d]+"   (recursion depth "+dp+")",v:pegs(cp())});t(k-1,x,d,s,dp+1)})(n,0,2,1,1);
+S.push({m:"Done in "+mv+" = 2^"+n+" − 1 moves.",v:pegs(cp())});return S}
+function genSub(i){const E=[{r:"T(n) = T(n−1) + 1",s:["Guess: T(n) = O(n), i.e. T(n) ≤ c·n","Assume it holds for smaller input: T(n−1) ≤ c(n−1)","Substitute: T(n) ≤ c(n−1) + 1 = cn − c + 1","Verify: cn − c + 1 ≤ cn whenever c ≥ 1 ✓","Conclusion: T(n) = O(n)"]},
+{r:"T(n) = 2T(n/2) + n",s:["Guess: T(n) = O(n log n), i.e. T(n) ≤ c·n·log n","Assume for smaller input: T(n/2) ≤ c(n/2)·log(n/2)","Substitute: T(n) ≤ 2·c(n/2)·log(n/2) + n = cn·log n − cn + n","Verify: −cn + n ≤ 0 whenever c ≥ 1, so T(n) ≤ cn·log n ✓","Conclusion: T(n) = O(n log n)"]}][i];
+const H=["1 · Guess","2 · Assume","3 · Substitute","4 · Verify","5 · Conclude"];
+return E.s.map((x,k)=>({m:E.r+" — "+H[k],v:`<div style="width:100%"><div class="hint">Solving ${E.r}</div>${E.s.slice(0,k+1).map(q=>`<div class="ln">${q}</div>`).join("")}</div>`}))}
+function genTree(a,n){const S=[],L=Math.log2(n);let tot=0;const rows=[];
+S.push({m:"Recurrence T(n) = "+a+"·T(n/2) + n, with n = "+n+". Expand it level by level and add the cost of each level.",v:`<div class="n">T(${n})</div>`});
+for(let k=0;k<=L;k++){const nodes=a**k,sz=n/2**k,cost=k==L?nodes:nodes*sz;tot+=cost;
+rows.push(`<div class="lv"><div class="t">Level ${k}: ${nodes} × ${k==L?"1":sz}</div><div class="c chips">${Array(Math.min(nodes,16)).fill(`<span class="chip">${k==L?1:sz}</span>`).join("")}${nodes>16?"…":""}</div><b>${cost}</b></div>`);
+S.push({m:"Level "+k+": "+nodes+" node(s) of size "+(k==L?"1 (leaves, cost 1 each)":sz)+" → cost "+cost,v:`<div style="width:100%">${rows.join("")}</div>`})}
+const res=a==2?"Each level costs n, with log n levels → Θ(n log n)":a==3?"Level cost grows by 3/2 each level; leaves dominate → Θ(n^1.585)":"Level cost doubles each level; leaves dominate → Θ(n²)";
+S.push({m:"Total = "+tot+".  "+res,v:`<div style="width:100%">${rows.join("")}</div>`});return S}
+/* ---------- code ---------- */
+const CODE={
+max:{Python:`def max_sub(A, lo, hi):
+    if lo == hi: return A[lo]
+    mid = (lo + hi) // 2
+    left = max_sub(A, lo, mid)
+    right = max_sub(A, mid + 1, hi)
+    s, ls = 0, float('-inf')
+    for i in range(mid, lo - 1, -1): s += A[i]; ls = max(ls, s)
+    s, rs = 0, float('-inf')
+    for j in range(mid + 1, hi + 1): s += A[j]; rs = max(rs, s)
+    return max(left, right, ls + rs)`,Java:`static int maxSub(int[] A, int lo, int hi) {
+    if (lo == hi) return A[lo];
+    int mid = (lo + hi) / 2;
+    int left = maxSub(A, lo, mid), right = maxSub(A, mid + 1, hi);
+    int s = 0, ls = Integer.MIN_VALUE, rs = Integer.MIN_VALUE;
+    for (int i = mid; i >= lo; i--) { s += A[i]; ls = Math.max(ls, s); }
+    s = 0;
+    for (int j = mid + 1; j <= hi; j++) { s += A[j]; rs = Math.max(rs, s); }
+    return Math.max(Math.max(left, right), ls + rs);
+}`,"C++":`int maxSub(vector<int>& A, int lo, int hi) {
+    if (lo == hi) return A[lo];
+    int mid = (lo + hi) / 2;
+    int left = maxSub(A, lo, mid), right = maxSub(A, mid + 1, hi);
+    int s = 0, ls = INT_MIN, rs = INT_MIN;
+    for (int i = mid; i >= lo; i--) { s += A[i]; ls = max(ls, s); }
+    s = 0;
+    for (int j = mid + 1; j <= hi; j++) { s += A[j]; rs = max(rs, s); }
+    return max({left, right, ls + rs});
+}`},
+int:{Python:`def multiply(x, y):
+    if x < 10 or y < 10: return x * y
+    m = max(len(str(x)), len(str(y))) // 2
+    p = 10 ** m
+    a, b = divmod(x, p)      # x = a*10^m + b
+    c, d = divmod(y, p)      # y = c*10^m + d
+    ac, ad = multiply(a, c), multiply(a, d)
+    bc, bd = multiply(b, c), multiply(b, d)
+    return ac * p * p + (ad + bc) * p + bd`,Java:`static long multiply(long x, long y) {
+    if (x < 10 || y < 10) return x * y;
+    int m = Math.max(Long.toString(x).length(), Long.toString(y).length()) / 2;
+    long p = (long) Math.pow(10, m);
+    long a = x / p, b = x % p, c = y / p, d = y % p;
+    return multiply(a, c) * p * p
+         + (multiply(a, d) + multiply(b, c)) * p
+         + multiply(b, d);
+}`,"C++":`long long multiply(long long x, long long y) {
+    if (x < 10 || y < 10) return x * y;
+    int m = max(to_string(x).size(), to_string(y).size()) / 2;
+    long long p = pow(10, m);
+    long long a = x / p, b = x % p, c = y / p, d = y % p;
+    return multiply(a, c) * p * p
+         + (multiply(a, d) + multiply(b, c)) * p
+         + multiply(b, d);
+}`},
+str:{Python:`import numpy as np
+def strassen(A, B):
+    n = len(A)
+    if n == 1: return A * B
+    h = n // 2
+    A11, A12, A21, A22 = A[:h,:h], A[:h,h:], A[h:,:h], A[h:,h:]
+    B11, B12, B21, B22 = B[:h,:h], B[:h,h:], B[h:,:h], B[h:,h:]
+    M1 = strassen(A11 + A22, B11 + B22); M2 = strassen(A21 + A22, B11)
+    M3 = strassen(A11, B12 - B22);       M4 = strassen(A22, B21 - B11)
+    M5 = strassen(A11 + A12, B22);       M6 = strassen(A21 - A11, B11 + B12)
+    M7 = strassen(A12 - A22, B21 + B22)
+    return np.block([[M1+M4-M5+M7, M3+M5], [M2+M4, M1-M2+M3+M6]])`,Java:`// 2x2 case shown (7 multiplications); for n x n, apply the same on n/2 blocks
+static int[][] strassen2(int[][] A, int[][] B) {
+    int m1 = (A[0][0] + A[1][1]) * (B[0][0] + B[1][1]);
+    int m2 = (A[1][0] + A[1][1]) * B[0][0];
+    int m3 = A[0][0] * (B[0][1] - B[1][1]);
+    int m4 = A[1][1] * (B[1][0] - B[0][0]);
+    int m5 = (A[0][0] + A[0][1]) * B[1][1];
+    int m6 = (A[1][0] - A[0][0]) * (B[0][0] + B[0][1]);
+    int m7 = (A[0][1] - A[1][1]) * (B[1][0] + B[1][1]);
+    return new int[][]{{m1+m4-m5+m7, m3+m5}, {m2+m4, m1-m2+m3+m6}};
+}`,"C++":`// 2x2 case shown (7 multiplications); for n x n, apply the same on n/2 blocks
+array<array<int,2>,2> strassen2(array<array<int,2>,2> A, array<array<int,2>,2> B) {
+    int m1 = (A[0][0] + A[1][1]) * (B[0][0] + B[1][1]);
+    int m2 = (A[1][0] + A[1][1]) * B[0][0];
+    int m3 = A[0][0] * (B[0][1] - B[1][1]);
+    int m4 = A[1][1] * (B[1][0] - B[0][0]);
+    int m5 = (A[0][0] + A[0][1]) * B[1][1];
+    int m6 = (A[1][0] - A[0][0]) * (B[0][0] + B[0][1]);
+    int m7 = (A[0][1] - A[1][1]) * (B[1][0] + B[1][1]);
+    return {{{m1+m4-m5+m7, m3+m5}, {m2+m4, m1-m2+m3+m6}}};
+}`},
+toh:{Python:`def toh(n, src, dst, aux):
+    if n == 1:
+        print("Move disk 1 from", src, "to", dst)
+        return
+    toh(n - 1, src, aux, dst)                     # step 1
+    print("Move disk", n, "from", src, "to", dst) # step 2
+    toh(n - 1, aux, dst, src)                     # step 3`,Java:`static void toh(int n, char src, char dst, char aux) {
+    if (n == 1) { System.out.println("Move disk 1 from " + src + " to " + dst); return; }
+    toh(n - 1, src, aux, dst);
+    System.out.println("Move disk " + n + " from " + src + " to " + dst);
+    toh(n - 1, aux, dst, src);
+}`,"C++":`void toh(int n, char src, char dst, char aux) {
+    if (n == 1) { cout << "Move disk 1 from " << src << " to " << dst << "\\n"; return; }
+    toh(n - 1, src, aux, dst);
+    cout << "Move disk " << n << " from " << src << " to " << dst << "\\n";
+    toh(n - 1, aux, dst, src);
+}`}};
+/* ---------- pages ---------- */
+const PAGES={
+max:{n:"Max Subarray",note:"The best contiguous sum lies in the left half, the right half, or crosses the middle. Return the maximum of the three.",lbl:"Array (comma separated)",inp:"2, 3, -8, 7, -1, 2, 3",gen:v=>genMax(v.split(",").map(Number).filter(x=>!isNaN(x)).slice(0,12)),rec:"T(n) = 2T(n/2) + n",t:"Θ(n log n)",s:"Θ(log n) recursion stack",x:"Brute force with nested loops is O(n²). The crossing step is a linear scan, so f(n) = n.",lg:'<span style="color:var(--b)">■</span> left half &nbsp;<span style="color:var(--o)">■</span> right half &nbsp;<span style="color:var(--g)">■</span> result',code:"max"},
+int:{n:"Large Integers",note:"Split X = a·10^m + b and Y = c·10^m + d. Then XY = ac·10^2m + (ad + bc)·10^m + bd, which needs 4 smaller multiplications.",lbl:"Two integers X, Y",inp:"1234, 5678",gen:v=>{const [x,y]=v.split(",").map(s=>Math.abs(parseInt(s)));return genInt(Math.min(x||1234,99999),Math.min(y||5678,99999))},rec:"T(n) = 4T(n/2) + n",t:"O(n²)",s:"O(n) per level, O(log n) depth",x:"Here a = 4 > 2^1, so the leaves dominate: Θ(n^log₂4) = Θ(n²). Splitting alone gives no speed-up over the classical digit-by-digit method.",lg:"",code:"int"},
+str:{n:"Strassen",note:"Plain D&C matrix multiplication uses 8 block products, giving O(n³). Strassen computes 7 products M1 to M7 and recombines them with additions.",lbl:"A | B (2×2 each, row by row)",inp:"1, 2, 3, 4 | 5, 6, 7, 8",gen:v=>{const p=v.split("|").map(s=>s.split(",").map(Number)),ok=q=>q&&q.length==4&&!q.some(isNaN);return genStr(ok(p[0])?p[0]:[1,2,3,4],ok(p[1])?p[1]:[5,6,7,8])},rec:"T(n) = 7T(n/2) + n²",t:"O(n^log₂7) ≈ O(n^2.807)",s:"O(n²) space, O(log n) stack",x:"Normal D&C: 8T(n/2) + n² gives O(n³). Strassen has more additions and uses extra memory, so it is slower for small matrices.",lg:"",code:"str"},
+toh:{n:"Tower of Hanoi",note:"Move n disks from A to C using B. Step 1: move n−1 disks A→B. Step 2: move the largest disk A→C. Step 3: move n−1 disks B→C.",lbl:"Number of disks (1 to 5)",inp:"3",gen:v=>genHanoi(Math.min(5,Math.max(1,parseInt(v)||3))),rec:"T(n) = 2T(n−1) + 1",t:"O(2ⁿ), exactly 2ⁿ − 1 moves",s:"O(n) recursion stack",x:"The size shrinks by subtraction (n−1), not division, so the Master theorem does not apply. Use the recursion tree: 1 + 2 + 4 + … + 2ⁿ⁻¹ = 2ⁿ − 1.",lg:"",code:"toh"},
+sub:{n:"Substitution Method",note:"Guess the bound, assume it holds for smaller inputs, substitute into the recurrence, and verify.",lbl:"Example",sel:["T(n) = T(n−1) + 1","T(n) = 2T(n/2) + n"],gen:v=>genSub(+v),rec:"Guess → Assume → Substitute → Verify",t:"Works for almost any recurrence, and is rigorous",s:"Needs a good guess, and can be long",x:"",lg:""},
+tree:{n:"Recursion Tree Method",note:"Expand the recurrence into a tree, compute the cost of each level, then add the levels. Choose a to see how the answer changes.",lbl:"T(n) = a·T(n/2) + n, with a =",sel:["2","3","4"],gen:v=>genTree(+v,16),rec:"Expand → Cost per level → Add",t:"a = 2: Θ(n log n); a = 3: Θ(n^1.585); a = 4: Θ(n²)",s:"Gives intuition and a good guess for the substitution method",x:"",lg:""}};
+function sim(id){const A=PAGES[id];let steps=[],i=0;const C=A.code?CODE[A.code]:null;
+$("#view").innerHTML=`<div class="card"><h2>${A.n}</h2><p>${A.note}</p>
+<div class="nav sm" id="pn" style="margin-top:14px"><button class="tab on" data-p="s">Simulation</button>${C?'<button class="tab" data-p="c">Code</button>':""}<button class="tab" data-p="x">Complexity</button></div>
+<div id="ps"><div class="row"><label>${A.lbl}</label>${A.sel?`<select id="in">${A.sel.map((o,k)=>`<option value="${A.n=="Recursion Tree Method"?o:k}">${o}</option>`).join("")}</select>`:`<input id="in" value="${A.inp}" style="flex:1;min-width:160px">`}<button class="btn pri" id="run">${A.sel?"Restart":"Run"}</button></div>
+<div class="vis" id="vis"></div><div class="msg" id="msg"></div>
+<div class="row"><button class="btn" id="pv">◀ Prev</button><button class="btn" id="nx">Next ▶</button><button class="btn" id="pl">▶ Play</button><span class="hint" id="cnt"></span></div>
+<div class="legend">${A.lg}</div><details><summary>Show step log</summary><div class="log" id="log"></div></details></div>
+<div id="pc" style="display:none">${C?`<div class="nav sm" id="lt" style="margin-top:14px">${Object.keys(C).map(l=>`<button class="tab" data-l="${l}">${l}</button>`).join("")}</div><pre id="code"></pre>`:""}</div>
+<div id="px" style="display:none"><div class="grid" style="margin-top:14px"><div class="stat"><b>Recurrence</b>${A.rec}</div><div class="stat"><b>Time</b>${A.t}</div><div class="stat"><b>Space</b>${A.s}</div></div>${A.x?`<p>${A.x}</p>`:""}</div></div>`;
+$("#pn").onclick=e=>{const p=e.target.dataset.p;if(!p)return;clearInterval(timer);$("#pl").textContent="▶ Play";document.querySelectorAll("#pn .tab").forEach(b=>b.classList.toggle("on",b.dataset.p==p));$("#ps").style.display=p=="s"?"":"none";$("#pc").style.display=p=="c"?"":"none";$("#px").style.display=p=="x"?"":"none"};
+if(C){const L=Object.keys(C),setL=l=>{$("#code").textContent=C[l];document.querySelectorAll("#lt .tab").forEach(b=>b.classList.toggle("on",b.dataset.l==l))};$("#lt").onclick=e=>e.target.dataset.l&&setL(e.target.dataset.l);setL(L[0])}
+const draw=()=>{const s=steps[i];$("#msg").textContent=s.m.trim();$("#vis").innerHTML=s.v;$("#cnt").textContent="Step "+(i+1)+" of "+steps.length;
+$("#log").innerHTML=steps.slice(0,i+1).map((x,k)=>`<div class="${k==i?"cur":""}">${esc(x.m).replace(/^ +/,q=>"\u00a0".repeat(q.length*2))}</div>`).join("");$("#log").scrollTop=1e9};
+const run=()=>{clearInterval(timer);$("#pl").textContent="▶ Play";steps=A.gen($("#in").value);i=0;draw()};
+$("#run").onclick=run;if(A.sel)$("#in").onchange=run;
+$("#nx").onclick=()=>{if(i<steps.length-1){i++;draw()}};$("#pv").onclick=()=>{if(i>0){i--;draw()}};
+$("#pl").onclick=()=>{if($("#pl").textContent.includes("Pause")){clearInterval(timer);$("#pl").textContent="▶ Play";return}
+if(i>=steps.length-1)i=0;$("#pl").textContent="⏸ Pause";timer=setInterval(()=>{if(i<steps.length-1){i++;draw()}else{clearInterval(timer);$("#pl").textContent="▶ Play"}},1000)};run()}
+/* ---------- idea + master ---------- */
+function idea(){$("#view").innerHTML=`<div class="card"><h2>The Idea</h2><p>Solve a big problem by breaking it into smaller problems of the same kind, solving those recursively, and combining their answers.</p>
+<div class="vis"><div class="tree"><div class="n">Problem of size n</div><div style="display:flex;gap:16px"><span class="n">Subproblem n/2</span><span class="n">Subproblem n/2</span></div><div style="display:flex;gap:16px"><span class="n c">Solve recursively</span><span class="n c">Solve recursively</span></div><div class="n s">Combine the answers</div></div></div>
+<table><tr><th>Step</th><th>What happens</th></tr><tr><td><b>1. Divide</b></td><td>Split the input into smaller subproblems</td></tr><tr><td><b>2. Conquer</b></td><td>Solve each subproblem recursively (stop at a base case)</td></tr><tr><td><b>3. Combine</b></td><td>Merge the sub-answers into the final answer</td></tr></table>
+<p style="margin-top:18px"><b>General recurrence: T(n) = a·T(n/b) + f(n)</b></p><p class="hint">a = number of subproblems · b = factor the size shrinks by · f(n) = divide + combine work. Example, merge sort: T(n) = 2T(n/2) + n.</p>
+<p>Try the Master theorem calculator below, then use the tabs above to explore each method and example problem.</p></div>`;masterPage($("#view"));$("#view").insertAdjacentHTML("beforeend",`<div class="card"><h2>Summary</h2><table><tr><th>Problem</th><th>Recurrence</th><th>Complexity</th></tr><tr><td>Binary search</td><td>T(n/2) + 1</td><td>Θ(log n)</td></tr><tr><td>Merge sort / Max subarray</td><td>2T(n/2) + n</td><td>Θ(n log n)</td></tr><tr><td>Large integers (4 mults)</td><td>4T(n/2) + n</td><td>O(n²)</td></tr><tr><td>Matrix mult. (D&amp;C)</td><td>8T(n/2) + n²</td><td>O(n³)</td></tr><tr><td>Strassen</td><td>7T(n/2) + n²</td><td>O(n^2.807)</td></tr><tr><td>Tower of Hanoi</td><td>2T(n−1) + 1</td><td>O(2ⁿ), exactly 2ⁿ − 1 moves</td></tr></table></div>`)}
+function masterPage(emb){const PS=[["Binary search",1,2,0,0],["Merge sort / Max subarray",2,2,1,0],["3T(n/2) + n²",3,2,2,0],["Matrix D&C",8,2,2,0],["Strassen",7,2,2,0],["Large integers (4 mults)",4,2,1,0]];
+const H=`<div class="card"><h2>Master Method</h2><p>For T(n) = a·T(n/b) + Θ(n<sup>k</sup> log<sup>p</sup> n), compare <b>a</b> with <b>b<sup>k</sup></b>.</p>
+<div class="row"><select id="pr"><option value="">Load an example…</option>${PS.map((p,i)=>`<option value="${i}">${p[0]}</option>`).join("")}</select></div>
+<div class="row" style="font-size:18px">T(n) = <input id="ma" type="number" value="2" min="1" style="width:70px"> T(n / <input id="mb" type="number" value="2" min="2" style="width:70px">) + Θ(n<sup><input id="mk" type="number" value="1" step="any" style="width:70px"></sup> log<sup><input id="mp" type="number" value="0" style="width:70px"></sup> n)</div>
+<div class="vis" style="min-height:110px;flex-direction:column"><div class="hint" id="m1"></div><div class="msg" id="m2" style="font-size:24px;min-height:0"></div></div>
+<table><tr><th>Case</th><th>Condition</th><th>Result</th></tr><tr><td>a &gt; b<sup>k</sup></td><td>leaves dominate</td><td>Θ(n<sup>log<sub>b</sub>a</sup>)</td></tr>
+<tr><td>a = b<sup>k</sup></td><td>every level equal</td><td>p &gt; −1: Θ(n<sup>log<sub>b</sub>a</sup> log<sup>p+1</sup> n)<br>p = −1: Θ(n<sup>log<sub>b</sub>a</sup> log log n)<br>p &lt; −1: Θ(n<sup>log<sub>b</sub>a</sup>)</td></tr>
+<tr><td>a &lt; b<sup>k</sup></td><td>root dominates</td><td>p ≥ 0: Θ(n<sup>k</sup> log<sup>p</sup> n)<br>p &lt; 0: Θ(n<sup>k</sup>)</td></tr></table>
+<p class="hint">Requires a ≥ 1, b &gt; 1. It fails for T(n−1) types, f(n) = 2ⁿ, or sin n.</p></div>`;if(emb)emb.insertAdjacentHTML("beforeend",H);else $("#view").innerHTML=H;
+const g=s=>+$(s).value,up=()=>{const a=g("#ma"),b=g("#mb"),k=g("#mk"),p=g("#mp");if(a<1||b<=1){$("#m1").textContent="Need a ≥ 1 and b > 1";$("#m2").textContent="";return}
+const L=Math.log(a)/Math.log(b),bk=b**k,n="n^"+f3(L);let r;
+const c=Math.abs(a-bk)<1e-9?0:a>bk?1:-1;
+if(c>0)r="Θ("+n+")";else if(c==0)r=p>-1?"Θ("+n+" · log^"+(p+1)+" n)":p==-1?"Θ("+n+" · log log n)":"Θ("+n+")";else r=p>=0?"Θ(n^"+k+(p?" · log^"+p+" n":"")+")":"Θ(n^"+k+")";
+$("#m1").textContent="log_b a = "+f3(L)+",  b^k = "+f3(bk)+"  →  a "+(c>0?">":c==0?"=":"<")+" b^k";$("#m2").textContent=r};
+document.querySelectorAll("#view input").forEach(x=>x.oninput=up);
+$("#pr").onchange=e=>{const p=PS[e.target.value];if(!p)return;$("#ma").value=p[1];$("#mb").value=p[2];$("#mk").value=p[3];$("#mp").value=p[4];up()};up()}
+/* ---------- navigation ---------- */
+const TOP=[["idea","Idea"],["rec","Solving Recurrences"],["max","Max Subarray"],["int","Large Integers"],["str","Strassen"],["toh","Tower of Hanoi"]],REC=[["sub","Substitution"],["tree","Recursion Tree"],["master","Master Method"]];
+const mark=(sel,k,a)=>document.querySelectorAll(sel+" .tab").forEach(b=>b.classList.toggle("on",b.dataset.t==k));
+$("#nav").innerHTML=TOP.map(t=>`<button class="tab" data-t="${t[0]}">${t[1]}</button>`).join("");
+$("#sub").innerHTML=REC.map(t=>`<button class="tab" data-t="${t[0]}">${t[1]}</button>`).join("");
+function show(t){clearInterval(timer);const isRec=["sub","tree","master"].includes(t);mark("#nav",isRec?"rec":t);$("#sub").style.display=isRec?"flex":"none";if(isRec)mark("#sub",t);
+t=="idea"?idea():t=="master"?masterPage():sim(t)}
+$("#nav").onclick=e=>{const t=e.target.dataset.t;if(t)show(t=="rec"?"sub":t)};$("#sub").onclick=e=>{const t=e.target.dataset.t;if(t)show(t)};
+show("idea");
+</script></body></html>
